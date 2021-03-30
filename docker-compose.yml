@@ -1,0 +1,53 @@
+version: "3"
+services:
+  redis:
+    image: redis
+    command: redis-server
+    container_name: redis
+    volumes:
+      - ./deployment/redis:/data
+    restart: always # always表容器运行发生错误时一直重启
+
+  db:
+    image: mysql
+    container_name: db
+    environment:
+      - MYSQL_DATABASE=spug # 数据库名称
+      - MYSQL_ROOT_PASSWORD=kriswell # 数据库密码
+    volumes:
+      - ./deployment/mysql/data:/var/lib/mysql # 挂载数据库数据
+      # - ./deployment/mysql/conf/my.conf:/etc/mysql/my.conf # 挂载配置文件
+      - ./deployment/mysql/init:/docker-entrypoint-initdb.d/ # 挂载数据初始化sql脚本
+    restart: always
+
+  web:
+    build: .
+    image: spug_api
+    container_name: spug_api
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+    volumes:
+      - .:/spug_api
+      - /tmp/logs:/tmp
+    command: gunicorn spug.wsgi:application -c gunicorn.conf.py
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    expose:
+      - "8000"
+    volumes:
+      - ./spug_web:/spug_web # 挂载静态文件
+      - ./media:/usr/share/nginx/html/media # 挂载上传文件
+      - ./deployment/nginx/ssl:/usr/share/nginx/ssl # 挂载ssl证书目录
+      - ./deployment/nginx/conf:/etc/nginx/conf.d # 挂载配置文件
+    restart: always
