@@ -33,4 +33,4 @@ RUN pip install --no-index --find-links=/pippacks/wheels -r requirements.txt && 
 
 RUN rm -rf /pippacks
 
-# ENTRYPOINT ["sh", "entrypoint.sh"]
+ENTRYPOINT ["sh", "entrypoint.sh"]

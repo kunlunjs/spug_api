@@ -6,9 +6,6 @@
 # set -e
 
 # init spug
-if [ ! -f /spug/spug_api/db.sqlite3 ]; then
-    python manage.py updatedb
-    python manage.py useradd -u admin -p spug.dev -s -n 管理员
-fi
+# python manage.py updatedb
 
-# supervisord -c /etc/supervisord.conf
+supervisord -c /etc/supervisord.conf
